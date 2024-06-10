@@ -2,34 +2,25 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(dirname ${0} | python3 -c 'import os, sys; print(os.path.abspath(sys.stdin.read().strip()))' )
-IMGUI_DIR=${1:?}
+CIMGUI_DIR=${1:?}
 COMMITISH=${2:?}
 OUT_DIR=${3:?}
 
-# Location of temporary checkout of imgui at specified commit (or branch)
-CHECKOUT="${SCRIPT_DIR}"/_temp_imgui_worktree
+OUT_DIR=$(readlink -f "${OUT_DIR}")
 
 # Make checkout
 
-pushd "${IMGUI_DIR}" > /dev/null
+pushd "${CIMGUI_DIR}" > /dev/null
 
 # Sanity check the supplied imgui path
 git rev-parse HEAD
-ls imgui.h
+ls imgui/imgui.h
 
 # Get files from specified rev
-mkdir "${CHECKOUT}"
-git archive "${COMMITISH}" | tar xC "${CHECKOUT}"
+pwd
+mkdir "${OUT_DIR}"
+git checkout "${COMMITISH}"
+git submodule update --init
+git ls-files --recurse-submodules | tar caf - -T- | tar xC "${OUT_DIR}"
 
 popd > /dev/null
-
-# Copy required files
-mkdir -p ${OUT_DIR}/
-mkdir -p ${OUT_DIR}/misc/freetype/
-
-cp "${CHECKOUT}"/LICENSE.txt "${OUT_DIR}"/
-cp "${CHECKOUT}"/*.{h,cpp} "${OUT_DIR}"/
-cp -r "${CHECKOUT}"/misc/freetype/ "${OUT_DIR}"/misc/
-
-# Clean up
-rm -r "${CHECKOUT}"
