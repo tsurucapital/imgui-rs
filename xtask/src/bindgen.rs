@@ -26,9 +26,10 @@ impl Bindgen {
                     "imgui-sys/third-party/imgui-{}{}",
                     variant, additional
                 ));
+                let generator_output = cimgui_output.join("generator/output");
 
-                let types = get_types(&cimgui_output.join("structs_and_enums.json"))?;
-                let funcs = get_definitions(&cimgui_output.join("definitions.json"))?;
+                let types = get_types(&generator_output.join("structs_and_enums.json"))?;
+                let funcs = get_definitions(&generator_output.join("definitions.json"))?;
                 let header = cimgui_output.join("cimgui.h");
 
                 let output_name = match (variant, flag) {

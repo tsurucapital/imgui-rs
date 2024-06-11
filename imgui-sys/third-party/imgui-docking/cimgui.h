@@ -195,7 +195,7 @@ typedef signed long long ImS64;
 typedef unsigned long long ImU64;
 typedef unsigned short ImWchar16;
 typedef unsigned int ImWchar32;
-typedef ImWchar16 ImWchar;
+typedef ImWchar32 ImWchar;
 typedef int (*ImGuiInputTextCallback)(ImGuiInputTextCallbackData* data);
 typedef void (*ImGuiSizeCallback)(ImGuiSizeCallbackData* data);
 typedef void* (*ImGuiMemAllocFunc)(size_t sz, void* user_data);
@@ -1346,7 +1346,7 @@ struct ImFont
     float Scale;
     float Ascent, Descent;
     int MetricsTotalSurface;
-    ImU8 Used4kPagesMap[(0xFFFF +1)/4096/8];
+    ImU8 Used4kPagesMap[(0x10FFFF +1)/4096/8];
 };
 typedef enum {
     ImGuiViewportFlags_None = 0,
