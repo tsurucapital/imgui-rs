@@ -223,7 +223,7 @@ pub type ImGuiInputTextFlags_ = cty::c_uint;
 pub const ImGuiTreeNodeFlags_None: ImGuiTreeNodeFlags_ = 0;
 pub const ImGuiTreeNodeFlags_Selected: ImGuiTreeNodeFlags_ = 1;
 pub const ImGuiTreeNodeFlags_Framed: ImGuiTreeNodeFlags_ = 2;
-pub const ImGuiTreeNodeFlags_AllowItemOverlap: ImGuiTreeNodeFlags_ = 4;
+pub const ImGuiTreeNodeFlags_AllowOverlap: ImGuiTreeNodeFlags_ = 4;
 pub const ImGuiTreeNodeFlags_NoTreePushOnOpen: ImGuiTreeNodeFlags_ = 8;
 pub const ImGuiTreeNodeFlags_NoAutoOpenOnLog: ImGuiTreeNodeFlags_ = 16;
 pub const ImGuiTreeNodeFlags_DefaultOpen: ImGuiTreeNodeFlags_ = 32;
@@ -254,7 +254,7 @@ pub const ImGuiSelectableFlags_DontClosePopups: ImGuiSelectableFlags_ = 1;
 pub const ImGuiSelectableFlags_SpanAllColumns: ImGuiSelectableFlags_ = 2;
 pub const ImGuiSelectableFlags_AllowDoubleClick: ImGuiSelectableFlags_ = 4;
 pub const ImGuiSelectableFlags_Disabled: ImGuiSelectableFlags_ = 8;
-pub const ImGuiSelectableFlags_AllowItemOverlap: ImGuiSelectableFlags_ = 16;
+pub const ImGuiSelectableFlags_AllowOverlap: ImGuiSelectableFlags_ = 16;
 pub type ImGuiSelectableFlags_ = cty::c_uint;
 pub const ImGuiComboFlags_None: ImGuiComboFlags_ = 0;
 pub const ImGuiComboFlags_PopupAlignLeft: ImGuiComboFlags_ = 1;
@@ -375,14 +375,19 @@ pub const ImGuiHoveredFlags_AnyWindow: ImGuiHoveredFlags_ = 4;
 pub const ImGuiHoveredFlags_NoPopupHierarchy: ImGuiHoveredFlags_ = 8;
 pub const ImGuiHoveredFlags_AllowWhenBlockedByPopup: ImGuiHoveredFlags_ = 32;
 pub const ImGuiHoveredFlags_AllowWhenBlockedByActiveItem: ImGuiHoveredFlags_ = 128;
-pub const ImGuiHoveredFlags_AllowWhenOverlapped: ImGuiHoveredFlags_ = 256;
-pub const ImGuiHoveredFlags_AllowWhenDisabled: ImGuiHoveredFlags_ = 512;
-pub const ImGuiHoveredFlags_NoNavOverride: ImGuiHoveredFlags_ = 1024;
-pub const ImGuiHoveredFlags_RectOnly: ImGuiHoveredFlags_ = 416;
+pub const ImGuiHoveredFlags_AllowWhenOverlappedByItem: ImGuiHoveredFlags_ = 256;
+pub const ImGuiHoveredFlags_AllowWhenOverlappedByWindow: ImGuiHoveredFlags_ = 512;
+pub const ImGuiHoveredFlags_AllowWhenDisabled: ImGuiHoveredFlags_ = 1024;
+pub const ImGuiHoveredFlags_NoNavOverride: ImGuiHoveredFlags_ = 2048;
+pub const ImGuiHoveredFlags_AllowWhenOverlapped: ImGuiHoveredFlags_ = 768;
+pub const ImGuiHoveredFlags_RectOnly: ImGuiHoveredFlags_ = 928;
 pub const ImGuiHoveredFlags_RootAndChildWindows: ImGuiHoveredFlags_ = 3;
-pub const ImGuiHoveredFlags_DelayNormal: ImGuiHoveredFlags_ = 2048;
-pub const ImGuiHoveredFlags_DelayShort: ImGuiHoveredFlags_ = 4096;
-pub const ImGuiHoveredFlags_NoSharedDelay: ImGuiHoveredFlags_ = 8192;
+pub const ImGuiHoveredFlags_ForTooltip: ImGuiHoveredFlags_ = 4096;
+pub const ImGuiHoveredFlags_Stationary: ImGuiHoveredFlags_ = 8192;
+pub const ImGuiHoveredFlags_DelayNone: ImGuiHoveredFlags_ = 16384;
+pub const ImGuiHoveredFlags_DelayShort: ImGuiHoveredFlags_ = 32768;
+pub const ImGuiHoveredFlags_DelayNormal: ImGuiHoveredFlags_ = 65536;
+pub const ImGuiHoveredFlags_NoSharedDelay: ImGuiHoveredFlags_ = 131072;
 pub type ImGuiHoveredFlags_ = cty::c_uint;
 pub const ImGuiDragDropFlags_None: ImGuiDragDropFlags_ = 0;
 pub const ImGuiDragDropFlags_SourceNoPreviewTooltip: ImGuiDragDropFlags_ = 1;
@@ -688,7 +693,10 @@ pub const ImGuiStyleVar_GrabRounding: ImGuiStyleVar_ = 21;
 pub const ImGuiStyleVar_TabRounding: ImGuiStyleVar_ = 22;
 pub const ImGuiStyleVar_ButtonTextAlign: ImGuiStyleVar_ = 23;
 pub const ImGuiStyleVar_SelectableTextAlign: ImGuiStyleVar_ = 24;
-pub const ImGuiStyleVar_COUNT: ImGuiStyleVar_ = 25;
+pub const ImGuiStyleVar_SeparatorTextBorderSize: ImGuiStyleVar_ = 25;
+pub const ImGuiStyleVar_SeparatorTextAlign: ImGuiStyleVar_ = 26;
+pub const ImGuiStyleVar_SeparatorTextPadding: ImGuiStyleVar_ = 27;
+pub const ImGuiStyleVar_COUNT: ImGuiStyleVar_ = 28;
 pub type ImGuiStyleVar_ = cty::c_uint;
 pub const ImGuiButtonFlags_None: ImGuiButtonFlags_ = 0;
 pub const ImGuiButtonFlags_MouseButtonLeft: ImGuiButtonFlags_ = 1;
@@ -751,6 +759,11 @@ pub const ImGuiMouseCursor_Hand: ImGuiMouseCursor_ = 7;
 pub const ImGuiMouseCursor_NotAllowed: ImGuiMouseCursor_ = 8;
 pub const ImGuiMouseCursor_COUNT: ImGuiMouseCursor_ = 9;
 pub type ImGuiMouseCursor_ = cty::c_int;
+pub const ImGuiMouseSource_Mouse: ImGuiMouseSource = 0;
+pub const ImGuiMouseSource_TouchScreen: ImGuiMouseSource = 1;
+pub const ImGuiMouseSource_Pen: ImGuiMouseSource = 2;
+pub const ImGuiMouseSource_COUNT: ImGuiMouseSource = 3;
+pub type ImGuiMouseSource = cty::c_uint;
 pub const ImGuiCond_None: ImGuiCond_ = 0;
 pub const ImGuiCond_Always: ImGuiCond_ = 1;
 pub const ImGuiCond_Once: ImGuiCond_ = 2;
@@ -792,6 +805,9 @@ pub struct ImGuiStyle {
     pub ColorButtonPosition: ImGuiDir,
     pub ButtonTextAlign: ImVec2,
     pub SelectableTextAlign: ImVec2,
+    pub SeparatorTextBorderSize: f32,
+    pub SeparatorTextAlign: ImVec2,
+    pub SeparatorTextPadding: ImVec2,
     pub DisplayWindowPadding: ImVec2,
     pub DisplaySafeAreaPadding: ImVec2,
     pub MouseCursorScale: f32,
@@ -801,6 +817,11 @@ pub struct ImGuiStyle {
     pub CurveTessellationTol: f32,
     pub CircleTessellationMaxError: f32,
     pub Colors: [ImVec4; 53usize],
+    pub HoverStationaryDelay: f32,
+    pub HoverDelayShort: f32,
+    pub HoverDelayNormal: f32,
+    pub HoverFlagsForTooltipMouse: ImGuiHoveredFlags,
+    pub HoverFlagsForTooltipNav: ImGuiHoveredFlags,
 }
 impl Default for ImGuiStyle {
     fn default() -> Self {
@@ -845,13 +866,6 @@ pub struct ImGuiIO {
     pub IniSavingRate: f32,
     pub IniFilename: *const cty::c_char,
     pub LogFilename: *const cty::c_char,
-    pub MouseDoubleClickTime: f32,
-    pub MouseDoubleClickMaxDist: f32,
-    pub MouseDragThreshold: f32,
-    pub KeyRepeatDelay: f32,
-    pub KeyRepeatRate: f32,
-    pub HoverDelayNormal: f32,
-    pub HoverDelayShort: f32,
     pub UserData: *mut cty::c_void,
     pub Fonts: *mut ImFontAtlas,
     pub FontGlobalScale: f32,
@@ -867,6 +881,15 @@ pub struct ImGuiIO {
     pub ConfigWindowsResizeFromEdges: bool,
     pub ConfigWindowsMoveFromTitleBarOnly: bool,
     pub ConfigMemoryCompactTimer: f32,
+    pub MouseDoubleClickTime: f32,
+    pub MouseDoubleClickMaxDist: f32,
+    pub MouseDragThreshold: f32,
+    pub KeyRepeatDelay: f32,
+    pub KeyRepeatRate: f32,
+    pub ConfigDebugBeginReturnValueOnce: bool,
+    pub ConfigDebugBeginReturnValueLoop: bool,
+    pub ConfigDebugIgnoreFocusLoss: bool,
+    pub ConfigDebugIniSettings: bool,
     pub BackendPlatformName: *const cty::c_char,
     pub BackendRendererName: *const cty::c_char,
     pub BackendPlatformUserData: *mut cty::c_void,
@@ -883,6 +906,7 @@ pub struct ImGuiIO {
         unsafe extern "C" fn(viewport: *mut ImGuiViewport, data: *mut ImGuiPlatformImeData),
     >,
     pub _UnusedPadding: *mut cty::c_void,
+    pub PlatformLocaleDecimalPoint: ImWchar,
     pub WantCaptureMouse: bool,
     pub WantCaptureKeyboard: bool,
     pub WantTextInput: bool,
@@ -900,10 +924,12 @@ pub struct ImGuiIO {
     pub KeyMap: [cty::c_int; 652usize],
     pub KeysDown: [bool; 652usize],
     pub NavInputs: [f32; 16usize],
+    pub Ctx: *mut ImGuiContext,
     pub MousePos: ImVec2,
     pub MouseDown: [bool; 5usize],
     pub MouseWheel: f32,
     pub MouseWheelH: f32,
+    pub MouseSource: ImGuiMouseSource,
     pub KeyCtrl: bool,
     pub KeyShift: bool,
     pub KeyAlt: bool,
@@ -921,6 +947,7 @@ pub struct ImGuiIO {
     pub MouseReleased: [bool; 5usize],
     pub MouseDownOwned: [bool; 5usize],
     pub MouseDownOwnedUnlessPopupClose: [bool; 5usize],
+    pub MouseWheelRequestAxisSwap: bool,
     pub MouseDownDuration: [f32; 5usize],
     pub MouseDownDurationPrev: [f32; 5usize],
     pub MouseDragMaxDistanceSqr: [f32; 5usize],
@@ -944,6 +971,7 @@ impl Default for ImGuiIO {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct ImGuiInputTextCallbackData {
+    pub Ctx: *mut ImGuiContext,
     pub EventFlag: ImGuiInputTextFlags,
     pub Flags: ImGuiInputTextFlags,
     pub UserData: *mut cty::c_void,
@@ -1214,6 +1242,7 @@ impl Default for ImGuiStorage {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ImGuiListClipper {
+    pub Ctx: *mut ImGuiContext,
     pub DisplayStart: cty::c_int,
     pub DisplayEnd: cty::c_int,
     pub ItemsCount: cty::c_int,
@@ -1474,16 +1503,33 @@ impl Default for ImDrawList {
     }
 }
 #[repr(C)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct ImVector_ImDrawListPtr {
+    pub Size: cty::c_int,
+    pub Capacity: cty::c_int,
+    pub Data: *mut *mut ImDrawList,
+}
+impl Default for ImVector_ImDrawListPtr {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ImDrawData {
     pub Valid: bool,
     pub CmdListsCount: cty::c_int,
     pub TotalIdxCount: cty::c_int,
     pub TotalVtxCount: cty::c_int,
-    pub CmdLists: *mut *mut ImDrawList,
+    pub CmdLists: ImVector_ImDrawListPtr,
     pub DisplayPos: ImVec2,
     pub DisplaySize: ImVec2,
     pub FramebufferScale: ImVec2,
+    pub OwnerViewport: *mut ImGuiViewport,
 }
 impl Default for ImDrawData {
     fn default() -> Self {
@@ -1782,7 +1828,9 @@ pub struct ImFont {
     pub ConfigDataCount: cty::c_short,
     pub FallbackChar: ImWchar,
     pub EllipsisChar: ImWchar,
-    pub DotChar: ImWchar,
+    pub EllipsisCharCount: cty::c_short,
+    pub EllipsisWidth: f32,
+    pub EllipsisCharStep: f32,
     pub DirtyLookupTables: bool,
     pub Scale: f32,
     pub Ascent: f32,
@@ -2092,10 +2140,10 @@ extern "C" {
     pub fn igPopStyleVar(count: cty::c_int);
 }
 extern "C" {
-    pub fn igPushAllowKeyboardFocus(allow_keyboard_focus: bool);
+    pub fn igPushTabStop(tab_stop: bool);
 }
 extern "C" {
-    pub fn igPopAllowKeyboardFocus();
+    pub fn igPopTabStop();
 }
 extern "C" {
     pub fn igPushButtonRepeat(repeat: bool);
@@ -2258,6 +2306,9 @@ extern "C" {
 }
 extern "C" {
     pub fn igBulletText(fmt: *const cty::c_char, ...);
+}
+extern "C" {
+    pub fn igSeparatorText(label: *const cty::c_char);
 }
 extern "C" {
     pub fn igButton(label: *const cty::c_char, size: ImVec2) -> bool;
@@ -3033,13 +3084,19 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
-    pub fn igBeginTooltip();
+    pub fn igBeginTooltip() -> bool;
 }
 extern "C" {
     pub fn igEndTooltip();
 }
 extern "C" {
     pub fn igSetTooltip(fmt: *const cty::c_char, ...);
+}
+extern "C" {
+    pub fn igBeginItemTooltip() -> bool;
+}
+extern "C" {
+    pub fn igSetItemTooltip(fmt: *const cty::c_char, ...);
 }
 extern "C" {
     pub fn igBeginPopup(str_id: *const cty::c_char, flags: ImGuiWindowFlags) -> bool;
@@ -3262,6 +3319,9 @@ extern "C" {
     pub fn igSetKeyboardFocusHere(offset: cty::c_int);
 }
 extern "C" {
+    pub fn igSetNextItemAllowOverlap();
+}
+extern "C" {
     pub fn igIsItemHovered(flags: ImGuiHoveredFlags) -> bool;
 }
 extern "C" {
@@ -3311,9 +3371,6 @@ extern "C" {
 }
 extern "C" {
     pub fn igGetItemRectSize(pOut: *mut ImVec2);
-}
-extern "C" {
-    pub fn igSetItemAllowOverlap();
 }
 extern "C" {
     pub fn igGetMainViewport() -> *mut ImGuiViewport;
@@ -3529,7 +3586,10 @@ extern "C" {
     pub fn ImGuiIO_AddMouseButtonEvent(self_: *mut ImGuiIO, button: cty::c_int, down: bool);
 }
 extern "C" {
-    pub fn ImGuiIO_AddMouseWheelEvent(self_: *mut ImGuiIO, wh_x: f32, wh_y: f32);
+    pub fn ImGuiIO_AddMouseWheelEvent(self_: *mut ImGuiIO, wheel_x: f32, wheel_y: f32);
+}
+extern "C" {
+    pub fn ImGuiIO_AddMouseSourceEvent(self_: *mut ImGuiIO, source: ImGuiMouseSource);
 }
 extern "C" {
     pub fn ImGuiIO_AddFocusEvent(self_: *mut ImGuiIO, focused: bool);
@@ -3556,7 +3616,7 @@ extern "C" {
     pub fn ImGuiIO_SetAppAcceptingEvents(self_: *mut ImGuiIO, accepting_events: bool);
 }
 extern "C" {
-    pub fn ImGuiIO_ClearInputCharacters(self_: *mut ImGuiIO);
+    pub fn ImGuiIO_ClearEventsQueue(self_: *mut ImGuiIO);
 }
 extern "C" {
     pub fn ImGuiIO_ClearInputKeys(self_: *mut ImGuiIO);
@@ -3826,10 +3886,16 @@ extern "C" {
     pub fn ImGuiListClipper_Step(self_: *mut ImGuiListClipper) -> bool;
 }
 extern "C" {
-    pub fn ImGuiListClipper_ForceDisplayRangeByIndices(
+    pub fn ImGuiListClipper_IncludeItemByIndex(
         self_: *mut ImGuiListClipper,
-        item_min: cty::c_int,
-        item_max: cty::c_int,
+        item_index: cty::c_int,
+    );
+}
+extern "C" {
+    pub fn ImGuiListClipper_IncludeItemsByIndex(
+        self_: *mut ImGuiListClipper,
+        item_begin: cty::c_int,
+        item_end: cty::c_int,
     );
 }
 extern "C" {
@@ -4344,6 +4410,9 @@ extern "C" {
 }
 extern "C" {
     pub fn ImDrawData_Clear(self_: *mut ImDrawData);
+}
+extern "C" {
+    pub fn ImDrawData_AddDrawList(self_: *mut ImDrawData, draw_list: *mut ImDrawList);
 }
 extern "C" {
     pub fn ImDrawData_DeIndexAllBuffers(self_: *mut ImDrawData);
