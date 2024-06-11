@@ -1,4 +1,5 @@
 use bitflags::bitflags;
+use sys::{ImGuiContext, ImGuiMouseSource, ImWchar};
 use std::f32;
 use std::ops::{Index, IndexMut};
 use std::os::raw::{c_char, c_void};
@@ -75,7 +76,8 @@ bitflags! {
         const NO_INPUTS = sys::ImGuiViewportFlags_NoInputs;
         const NO_RENDERER_CLEAR = sys::ImGuiViewportFlags_NoRendererClear;
         const TOP_MOST = sys::ImGuiViewportFlags_TopMost;
-        const MINIMIZED = sys::ImGuiViewportFlags_Minimized;
+        const IS_MINIMIZED = sys::ImGuiViewportFlags_IsMinimized;
+        const IS_FOCUSED = sys::ImGuiViewportFlags_IsFocused;
         const NO_AUTO_MERGE = sys::ImGuiViewportFlags_NoAutoMerge;
         const CAN_HOST_OTHER_WINDOWS = sys::ImGuiViewportFlags_CanHostOtherWindows;
     }
@@ -179,22 +181,6 @@ pub struct Io {
     pub(crate) ini_filename: *const c_char,
     pub(crate) log_filename: *const c_char,
 
-    /// Time for a double-click, in seconds
-    pub mouse_double_click_time: f32,
-    /// Distance threshold to stay in to validate a double-click, in pixels
-    pub mouse_double_click_max_dist: f32,
-    /// Distance threshold before considering we are dragging
-    pub mouse_drag_threshold: f32,
-    /// When holding a key/button, time before it starts repeating, in seconds
-    pub key_repeat_delay: f32,
-    /// When holding a key/button, rate at which it repeats, in seconds
-    pub key_repeat_rate: f32,
-
-    /// Delay on hover before [`ui.is_item_hovered_with_flags(ItemHoveredFlags::DELAY_NORMAL)`](crate::Ui::is_item_hovered_with_flags) returns true
-    pub hover_delay_normal: f32,
-    /// Delay on hover before [`ui.is_item_hovered_with_flags(ItemHoveredFlags::DELAY_SHORT)`](crate::Ui::is_item_hovered_with_flags) returns true
-    pub hover_delay_short: f32,
-
     user_data: *mut c_void,
     pub(crate) fonts: *mut FontAtlas,
 
@@ -262,6 +248,22 @@ pub struct Io {
     /// Set to -1.0 to disable.
     pub config_memory_compact_timer: f32,
 
+    /// Time for a double-click, in seconds
+    pub mouse_double_click_time: f32,
+    /// Distance threshold to stay in to validate a double-click, in pixels
+    pub mouse_double_click_max_dist: f32,
+    /// Distance threshold before considering we are dragging
+    pub mouse_drag_threshold: f32,
+    /// When holding a key/button, time before it starts repeating, in seconds
+    pub key_repeat_delay: f32,
+    /// When holding a key/button, rate at which it repeats, in seconds
+    pub key_repeat_rate: f32,
+
+    pub config_debug_begin_return_value_once: bool,
+    pub config_debug_begin_return_value_loop: bool,
+    pub config_debug_ignore_focus_loss: bool,
+    pub config_debug_ini_settings: bool,
+
     pub(crate) backend_platform_name: *const c_char,
     pub(crate) backend_renderer_name: *const c_char,
     pub(crate) backend_platform_user_data: *mut c_void,
@@ -279,6 +281,7 @@ pub struct Io {
         ),
     >,
     unused_padding: *mut c_void,
+    pub platform_locale_decimal_point: ImWchar,
     /// When true, imgui-rs will use the mouse inputs, so do not dispatch them to your main
     /// game/application
     pub want_capture_mouse: bool,
@@ -332,6 +335,7 @@ pub struct Io {
     /// Cleared back to zero after each frame. Keyboard keys will be auto-mapped and written
     /// here by `frame()`.
     pub nav_inputs: [f32; NavInput::COUNT + NavInput::INTERNAL_COUNT],
+    pub ctx: *mut ImGuiContext,
     /// Mouse position, in pixels.
     ///
     /// Set to [f32::MAX, f32::MAX] if mouse is unavailable (on another screen, etc.).
@@ -347,6 +351,7 @@ pub struct Io {
     /// Most users don't have a mouse with a horizontal wheel, and may not be filled by all
     /// backends.
     pub mouse_wheel_h: f32,
+    pub mouse_source: ImGuiMouseSource,
     #[cfg(feature = "docking")]
     mouse_hovered_viewport: sys::ImGuiID,
     /// Keyboard modifier pressed: Control
@@ -372,6 +377,7 @@ pub struct Io {
     mouse_released: [bool; 5],
     mouse_down_owned: [bool; 5],
     mouse_down_owned_unless_popup_close: [bool; 5],
+    mouse_wheel_request_axis_swap: bool,
     mouse_down_duration: [f32; 5],
     mouse_down_duration_prev: [f32; 5],
     #[cfg(feature = "docking")]
@@ -405,10 +411,10 @@ impl Io {
         }
     }
     /// Clear character input buffer
-    #[doc(alias = "ClearCharacters")]
-    pub fn clear_input_characters(&mut self) {
+    #[doc(alias = "ClearInputKeys")]
+    pub fn clear_input_keys(&mut self) {
         unsafe {
-            sys::ImGuiIO_ClearInputCharacters(self.raw_mut());
+            sys::ImGuiIO_ClearInputKeys(self.raw_mut());
         }
     }
     /// Peek character input buffer, return a copy of entire buffer
@@ -540,8 +546,6 @@ fn test_io_memory_layout() {
             assert_field_offset!(mouse_drag_threshold, MouseDragThreshold);
             assert_field_offset!(key_repeat_delay, KeyRepeatDelay);
             assert_field_offset!(key_repeat_rate, KeyRepeatRate);
-            assert_field_offset!(hover_delay_normal, HoverDelayNormal);
-            assert_field_offset!(hover_delay_short, HoverDelayShort);
             assert_field_offset!(user_data, UserData);
             assert_field_offset!(fonts, Fonts);
             assert_field_offset!(font_global_scale, FontGlobalScale);

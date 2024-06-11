@@ -1,7 +1,10 @@
 use std::mem::size_of;
+use std::os::raw::c_void;
 use std::slice;
 
-use crate::internal::{RawCast, RawWrapper};
+use sys::{ImDrawList, ImVector_ImDrawListPtr};
+
+use crate::internal::{ImVector, RawCast, RawWrapper};
 use crate::math::MintVec2;
 use crate::render::renderer::TextureId;
 use crate::sys;
@@ -18,7 +21,7 @@ pub struct DrawData {
     /// For convenience, sum of all draw list vertex buffer sizes.
     pub total_vtx_count: i32,
     // Array of DrawList.
-    cmd_lists: *mut *mut DrawList,
+    cmd_lists: ImVector<*mut ImDrawList>,
     /// Upper-left position of the viewport to render.
     ///
     /// (= upper-left corner of the orthogonal projection matrix to use)
@@ -56,11 +59,11 @@ impl DrawData {
     }
     #[inline]
     pub(crate) unsafe fn cmd_lists(&self) -> &[*const DrawList] {
-        if self.cmd_lists_count <= 0 || self.cmd_lists.is_null() {
+        if self.cmd_lists_count <= 0 || self.cmd_lists.as_slice().is_empty() {
             return &[];
         }
         slice::from_raw_parts(
-            self.cmd_lists as *const *const DrawList,
+            self.cmd_lists.data as *const *const DrawList,
             self.cmd_lists_count as usize,
         )
     }
@@ -365,14 +368,20 @@ impl From<&DrawData> for OwnedDrawData {
                 (*result).DisplaySize = other_ptr.DisplaySize;
                 (*result).FramebufferScale = other_ptr.FramebufferScale;
                 (*result).CmdListsCount = other_ptr.CmdListsCount;
-                (*result).CmdLists = sys::igMemAlloc(
+                sys::igMemFree((*result).CmdLists.Data as *mut c_void);
+                let data = sys::igMemAlloc(
                     size_of::<*mut sys::ImDrawList>() * other_ptr.CmdListsCount as usize,
                 ) as *mut *mut sys::ImDrawList;
+                let cmd_lists = ImVector_ImDrawListPtr {
+                    Size: other_ptr.CmdListsCount,
+                    Capacity: other_ptr.CmdListsCount,
+                    Data: data,
+                };
+                (*result).CmdLists = cmd_lists;
                 OwnedDrawData::copy_docking_properties(other_ptr, result);
-
-                let mut current_draw_list = (*result).CmdLists;
+                let mut current_draw_list = (*result).CmdLists.Data;
                 for i in 0..other_ptr.CmdListsCount as usize {
-                    *current_draw_list = sys::ImDrawList_CloneOutput(*other_ptr.CmdLists.add(i));
+                    *current_draw_list = sys::ImDrawList_CloneOutput(*other_ptr.CmdLists.Data.add(i));
                     current_draw_list = current_draw_list.add(1);
                 }
                 result
@@ -386,14 +395,13 @@ impl Drop for OwnedDrawData {
     fn drop(&mut self) {
         unsafe {
             if !self.draw_data.is_null() {
-                if !(*self.draw_data).CmdLists.is_null() {
+                if !(*self.draw_data).CmdLists.Data.is_null() {
                     for i in 0..(*self.draw_data).CmdListsCount as usize {
-                        let ptr = *(*self.draw_data).CmdLists.add(i);
+                        let ptr = *(*self.draw_data).CmdLists.Data.add(i);
                         if !ptr.is_null() {
                             sys::ImDrawList_destroy(ptr);
                         }
                     }
-                    sys::igMemFree((*self.draw_data).CmdLists as *mut std::ffi::c_void);
                 }
                 sys::ImDrawData_destroy(self.draw_data);
                 self.draw_data = std::ptr::null_mut();
@@ -417,16 +425,20 @@ fn test_owneddrawdata_from_drawdata() {
     // Build a dummy draw data object
     let mut draw_list = sys::ImDrawList::default();
     let mut draw_lists_raw = [std::ptr::addr_of_mut!(draw_list)];
+    let cmd_lists = sys::ImVector_ImDrawListPtr {
+        Size: 1,
+        Capacity: 1,
+        Data: draw_lists_raw.as_mut_ptr(),
+    };
     let draw_data_raw = sys::ImDrawData {
         Valid: true,
         CmdListsCount: 1,
-        CmdLists: draw_lists_raw.as_mut_ptr(),
+        CmdLists: cmd_lists,
         TotalIdxCount: 123,
         TotalVtxCount: 456,
         DisplayPos: sys::ImVec2 { x: 123.0, y: 456.0 },
         DisplaySize: sys::ImVec2 { x: 789.0, y: 012.0 },
         FramebufferScale: sys::ImVec2 { x: 3.0, y: 7.0 },
-        #[cfg(feature = "docking")]
         OwnerViewport: unsafe { std::ptr::null_mut::<sys::ImGuiViewport>().offset(123) },
     };
     let draw_data = unsafe { DrawData::from_raw(&draw_data_raw) };
@@ -441,7 +453,9 @@ fn test_owneddrawdata_from_drawdata() {
         draw_data_raw.CmdListsCount,
         owned_draw_data_raw.CmdListsCount
     );
-    assert!(!draw_data_raw.CmdLists.is_null());
+    assert_ne!(draw_data_raw.CmdLists.Capacity, 0);
+    assert_ne!(draw_data_raw.CmdLists.Size, 0);
+    assert!(!draw_data_raw.CmdLists.Data.is_null());
     assert_eq!(
         draw_data_raw.TotalIdxCount,
         owned_draw_data_raw.TotalIdxCount
@@ -473,16 +487,20 @@ fn test_owneddrawdata_drop() {
     // Build a dummy draw data object
     let mut draw_list = sys::ImDrawList::default();
     let mut draw_lists_raw = [std::ptr::addr_of_mut!(draw_list)];
+    let cmd_lists = sys::ImVector_ImDrawListPtr {
+        Size: 1,
+        Capacity: 1,
+        Data: draw_lists_raw.as_mut_ptr(),
+    };
     let draw_data_raw = sys::ImDrawData {
         Valid: true,
         CmdListsCount: 1,
-        CmdLists: draw_lists_raw.as_mut_ptr(),
+        CmdLists: cmd_lists,
         TotalIdxCount: 0,
         TotalVtxCount: 0,
         DisplayPos: sys::ImVec2 { x: 0.0, y: 0.0 },
         DisplaySize: sys::ImVec2 { x: 800.0, y: 600.0 },
         FramebufferScale: sys::ImVec2 { x: 1.0, y: 1.0 },
-        #[cfg(feature = "docking")]
         OwnerViewport: std::ptr::null_mut(),
     };
     let draw_data = unsafe { DrawData::from_raw(&draw_data_raw) };

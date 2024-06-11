@@ -397,6 +397,7 @@ impl Renderer {
                 work_pos: [monitor.position().x as f32, monitor.position().y as f32],
                 work_size: [monitor.size().width as f32, monitor.size().height as f32],
                 dpi_scale: 1.0,
+                platform_handle: std::ptr::null_mut(),
             });
         }
         imgui

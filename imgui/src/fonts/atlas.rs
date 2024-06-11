@@ -296,6 +296,10 @@ pub enum FontSource<'a> {
 /// Configuration settings for a font
 #[derive(Clone, Debug)]
 pub struct FontConfig {
+    pub font_data: *mut sys::cty::c_void,
+    pub font_data_size: i32,
+    pub font_data_owned_by_atlas: bool,
+    pub font_no: i32,
     /// Size in pixels for the rasterizer
     pub size_pixels: f32,
     /// Horizontal oversampling
@@ -328,8 +332,12 @@ pub struct FontConfig {
 impl Default for FontConfig {
     fn default() -> FontConfig {
         FontConfig {
+            font_data: std::ptr::null_mut(),
+            font_data_size: 0,
+            font_data_owned_by_atlas: true,
+            font_no: 0,
             size_pixels: 0.0,
-            oversample_h: 3,
+            oversample_h: 2,
             oversample_v: 1,
             pixel_snap_h: false,
             glyph_extra_spacing: [0.0, 0.0],
@@ -387,6 +395,10 @@ fn sys_font_config_default() -> sys::ImFontConfig {
 fn test_font_config_default() {
     let sys_font_config = sys_font_config_default();
     let font_config = FontConfig::default();
+    assert_eq!(font_config.font_data, sys_font_config.FontData);
+    assert_eq!(font_config.font_data_size, sys_font_config.FontDataSize);
+    assert_eq!(font_config.font_data_owned_by_atlas, sys_font_config.FontDataOwnedByAtlas);
+    assert_eq!(font_config.font_no, sys_font_config.FontNo);
     assert_eq!(font_config.size_pixels, sys_font_config.SizePixels);
     assert_eq!(font_config.oversample_h, sys_font_config.OversampleH);
     assert_eq!(font_config.oversample_v, sys_font_config.OversampleV);

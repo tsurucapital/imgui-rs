@@ -113,6 +113,9 @@ pub struct Style {
     ///
     /// Defaults to [0.5, 0.5] (top-left aligned).
     pub selectable_text_align: [f32; 2],
+    pub separator_text_border_size: f32,
+    pub separator_text_align: [f32; 2],
+    pub separator_text_padding: [f32; 2],
     /// Window positions are clamped to be visible within the display area or monitors by at least
     /// this amount.
     ///
@@ -122,6 +125,7 @@ pub struct Style {
     ///
     /// Also applies to popups/tooltips in addition to regular windows.
     pub display_safe_area_padding: [f32; 2],
+    pub docking_separator_size: f32,
     /// Scale software-rendered mouse cursor.
     ///
     /// May be removed later.
@@ -151,6 +155,11 @@ pub struct Style {
     pub circle_tesselation_max_error: f32,
     /// Style colors.
     pub colors: [[f32; 4]; StyleColor::COUNT],
+    pub hover_stationary_delay: f32,
+    pub hover_delay_short: f32,
+    pub hover_delay_normal: f32,
+    pub hover_flags_for_tooltip_mouse: sys::ImGuiHoveredFlags,
+    pub hover_flags_for_tooltip_nav: sys::ImGuiHoveredFlags,
 }
 
 unsafe impl RawCast<sys::ImGuiStyle> for Style {}

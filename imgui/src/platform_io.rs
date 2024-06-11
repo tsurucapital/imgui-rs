@@ -3,6 +3,8 @@ use std::{
     os::raw::{c_char, c_int},
 };
 
+use sys::cty;
+
 use crate::{
     internal::{ImVector, RawCast},
     Io, ViewportFlags,
@@ -515,6 +517,7 @@ pub struct PlatformMonitor {
     /// Set to `work_size` if not known.
     pub work_size: [f32; 2],
     pub dpi_scale: f32,
+    pub platform_handle: *mut cty::c_void,
 }
 
 #[test]

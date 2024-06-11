@@ -242,10 +242,10 @@ impl Ui {
     /// Allow focusing using TAB/Shift-TAB, enabled by default but you can
     /// disable it for certain widgets
     ///
-    /// Returns a [PushAllowKeyboardFocusToken] that should be dropped.
-    #[doc(alias = "PushAllowKeyboardFocus")]
-    pub fn push_allow_keyboard_focus(&self, allow: bool) -> PushAllowKeyboardFocusToken<'_> {
-        unsafe { sys::igPushAllowKeyboardFocus(allow) };
+    /// Returns a [PushTabStop] that should be dropped.
+    #[doc(alias = "PushTabStop")]
+    pub fn push_tab_stop(&self, allow: bool) -> PushAllowKeyboardFocusToken<'_> {
+        unsafe { sys::igPushTabStop(allow) };
         PushAllowKeyboardFocusToken::new(self)
     }
 
@@ -281,7 +281,7 @@ impl Ui {
     pub fn push_item_flag(&self, item_flag: ItemFlag) -> ItemFlagsStackToken<'_> {
         use self::ItemFlag::*;
         match item_flag {
-            AllowKeyboardFocus(v) => unsafe { sys::igPushAllowKeyboardFocus(v) },
+            AllowKeyboardFocus(v) => unsafe { sys::igPushTabStop(v) },
             ButtonRepeat(v) => unsafe { sys::igPushButtonRepeat(v) },
         }
         ItemFlagsStackToken::new(self, item_flag)
@@ -312,8 +312,8 @@ create_token!(
 create_token!(
     pub struct PushAllowKeyboardFocusToken<'ui>;
 
-    #[doc(alias = "PopAllowKeyboardFocus")]
-    drop { sys::igPopAllowKeyboardFocus() }
+    #[doc(alias = "PopTabStop")]
+    drop { sys::igPopTabStop() }
 );
 
 create_token!(
@@ -349,7 +349,7 @@ impl Drop for ItemFlagsStackToken<'_> {
     fn drop(&mut self) {
         unsafe {
             if self.1 == mem::discriminant(&ItemFlag::AllowKeyboardFocus(true)) {
-                sys::igPopAllowKeyboardFocus();
+                sys::igPopTabStop();
             } else if self.1 == mem::discriminant(&ItemFlag::ButtonRepeat(true)) {
                 sys::igPopButtonRepeat();
             } else {
