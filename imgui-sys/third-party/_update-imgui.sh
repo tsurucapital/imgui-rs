@@ -18,7 +18,7 @@ ls imgui/imgui.h
 
 # Get files from specified rev
 pwd
-mkdir "${OUT_DIR}"
+mkdir -p "${OUT_DIR}"
 git checkout "${COMMITISH}"
 git submodule update --init
 git ls-files --recurse-submodules | tar caf - -T- | tar xC "${OUT_DIR}"
